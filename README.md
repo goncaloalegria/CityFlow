@@ -376,6 +376,6 @@ Este projeto está licenciado sob a **MIT License** - veja o ficheiro [LICENSE](
 
 <div align="center">
 
-[![GitHub stars](https://img.shields.io/github/stars/seu-username/CityFlow?style=social)](https://github.com/goncaloalegria/CityFlow)
+[![GitHub stars](https://img.shields.io/github/stars/goncaloalegria/CityFlow?style=social)](https://github.com/goncaloalegria/CityFlow)
 
 </div>
