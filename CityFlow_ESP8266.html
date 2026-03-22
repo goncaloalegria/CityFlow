@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>CityFlow</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0a1628 0%, #0d1f3c 50%, #0a1628 100%);
+      font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      padding: 20px;
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: bold;
+    }
+    .logo-text h1 {
+      font-size: 1.5rem; font-weight: 700; margin: 0;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .logo-text p { color: #64748b; font-size: 0.7rem; letter-spacing: 2px; }
+    .notif-btn {
+      width: 44px; height: 44px;
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; font-size: 1.4rem;
+    }
+    .notif-dot {
+      position: absolute; top: 8px; right: 8px;
+      width: 10px; height: 10px;
+      background: #ef4444; border-radius: 50%;
+      border: 2px solid #0a1628;
+    }
+    
+    /* Saudacao */
+    .greeting { margin-bottom: 20px; }
+    .greeting p { color: #94a3b8; font-size: 1rem; margin-bottom: 4px; }
+    .greeting h2 { font-size: 1.8rem; font-weight: 700; }
+    
+    /* Card Principal */
+    .card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .card-info { display: flex; align-items: center; gap: 12px; }
+    .card-icon {
+      width: 50px; height: 50px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: bold;
+    }
+    .card-icon.purple { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .card-subtitle { color: #64748b; font-size: 0.8rem; }
+    .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .badge.green { background: #10b981; }
+    .badge.purple { background: #8b5cf6; }
+    .badge.red { background: #ef4444; }
+    .badge-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; }
+    
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .stat.green { background: rgba(16, 185, 129, 0.2); }
+    .stat.red { background: rgba(239, 68, 68, 0.15); }
+    .stat.blue { background: rgba(56, 189, 248, 0.15); }
+    .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat.green .stat-value { color: #10b981; }
+    .stat.red .stat-value { color: #ef4444; }
+    .stat.blue .stat-value { color: #38bdf8; }
+    .stat-label { color: #64748b; font-size: 0.7rem; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* Progress */
+    .progress-bar {
+      background: rgba(71, 85, 105, 0.3);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: all 0.5s ease;
+    }
+    .progress-fill.low { background: linear-gradient(90deg, #10b981, #38bdf8); }
+    .progress-fill.medium { background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); }
+    .progress-fill.high { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    
+    /* Mapa header */
+    .map-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .map-header span:first-child { font-size: 0.95rem; font-weight: 600; }
+    .realtime { font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 6px; }
+    .realtime-dot {
+      width: 8px; height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    /* Vagas */
+    .vagas-container {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .vagas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .vaga {
+      aspect-ratio: 1/1.3;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .vaga.livre {
+      background: rgba(6, 78, 59, 0.5);
+      border: 2px solid #10b981;
+    }
+    .vaga.ocupada {
+      background: rgba(127, 29, 29, 0.6);
+      border: 2px solid #b91c1c;
+    }
+    .vaga-led {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .vaga.livre .vaga-led { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    .vaga.ocupada .vaga-led { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+    .vaga-icon { font-size: 2.2rem; margin-bottom: 4px; }
+    .vaga.livre .vaga-icon { color: #10b981; font-weight: 700; font-size: 2rem; }
+    .vaga-label { font-size: 0.85rem; font-weight: 600; }
+    .vaga.livre .vaga-label { color: #10b981; }
+    .vaga.ocupada .vaga-label { color: #ef4444; }
+    
+    /* Legenda */
+    .legenda {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 14px;
+    }
+    .legenda-item { display: flex; align-items: center; gap: 6px; }
+    .legenda-cor {
+      width: 14px; height: 14px;
+      border-radius: 4px;
+    }
+    .legenda-cor.livre { background: rgba(16, 185, 129, 0.4); border: 2px solid #10b981; }
+    .legenda-cor.ocupada { background: rgba(239, 68, 68, 0.4); border: 2px solid #ef4444; }
+    .legenda-texto { color: #94a3b8; font-size: 0.8rem; }
+    
+    /* Card Em Breve */
+    .card.disabled { background: rgba(30, 41, 59, 0.4); }
+    .card.disabled .card-title { color: #cbd5e1; }
+    
+    /* ===== PERFIL ===== */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .profile-header h1 { font-size: 1.8rem; font-weight: 700; }
+    .settings-btn {
+      width: 44px; height: 44px;
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .profile-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 24px;
+      padding: 28px 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .avatar {
+      width: 100px; height: 100px;
+      background: linear-gradient(135deg, #38bdf8, #10b981);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 3rem;
+      box-shadow: 0 8px 32px rgba(56, 189, 248, 0.3);
+    }
+    .profile-name { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .profile-email { color: #64748b; font-size: 0.95rem; margin-bottom: 20px; }
+    .profile-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .profile-stat-value { font-size: 1.5rem; font-weight: 700; }
+    .profile-stat-value.blue { color: #38bdf8; }
+    .profile-stat-value.green { color: #10b981; }
+    .profile-stat-value.purple { color: #a855f7; }
+    .profile-stat-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    
+    /* Definicoes */
+    .section-title { font-size: 1rem; font-weight: 600; color: #94a3b8; margin-bottom: 12px; }
+    .menu-list {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item-left { display: flex; align-items: center; gap: 14px; }
+    .menu-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .menu-icon.blue { background: rgba(56, 189, 248, 0.2); }
+    .menu-icon.yellow { background: rgba(245, 158, 11, 0.2); }
+    .menu-icon.green { background: rgba(16, 185, 129, 0.2); }
+    .menu-label { font-size: 1rem; }
+    .menu-arrow { color: #64748b; font-size: 0.9rem; }
+    
+    /* ===== NAVEGACAO ===== */
+    .nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(15, 23, 42, 0.98);
+      border-top: 1px solid rgba(71, 85, 105, 0.4);
+      padding: 14px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: all 0.2s ease;
+    }
+    .nav-item.active { opacity: 1; }
+    .nav-item span:first-child { font-size: 1.5rem; }
+    .nav-item span:last-child { font-size: 0.75rem; color: #64748b; }
+    .nav-item.active span:last-child { color: #38bdf8; font-weight: 600; }
+    
+    .sim-hint {
+      text-align: center;
+      color: #475569;
+      font-size: 0.75rem;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGINA INICIO -->
+  <div id="page-home" class="page active">
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-icon">P</div>
+        <div class="logo-text">
+          <h1>CityFlow</h1>
+          <p>SMART PARKING</p>
+        </div>
+      </div>
+      <div class="notif-btn">
+        <span>🔔</span>
+        <div class="notif-dot"></div>
+      </div>
+    </div>
+
+    <div class="greeting">
+      <p>Olá,</p>
+      <h2>Condutor 👋</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-info">
+          <div class="card-icon">P</div>
+          <div>
+            <div class="card-title">Estacionamento<br>Principal</div>
+            <div class="card-subtitle">📍 Rua da Universidade</div>
+          </div>
+        </div>
+        <div class="badge green" id="badge-status">
+          <div class="badge-dot"></div>
+          <span id="badge-text">ABERTO</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat green">
+          <div class="stat-value" id="vagas-livres">1</div>
+          <div class="stat-label">LIVRES</div>
+        </div>
+        <div class="stat red">
+          <div class="stat-value" id="vagas-ocupadas">2</div>
+          <div class="stat-label">OCUPADAS</div>
+        </div>
+        <div class="stat blue">
+          <div class="stat-value" id="percentagem">67%</div>
+          <div class="stat-label">OCUPAÇÃO</div>
+        </div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill medium" id="progress-fill" style="width: 67%"></div>
+      </div>
+
+      <div class="map-header">
+        <span>Mapa de Vagas</span>
+        <span class="realtime">
+          <span class="realtime-dot"></span>
+          Tempo real
+        </span>
+      </div>
+
+      <div class="vagas-container">
+        <div class="vagas-grid">
+          <div class="vaga ocupada" id="vaga-1" onclick="toggleVaga(0)">
+            <div class="vaga-led"></div>
+            <div class="vaga-icon">🚗</div>
+            <div class="vaga-label">Vaga 1</div>
+          </div>
+          <div class="vaga ocupada" id="vaga-2" onclick="toggleVaga(1)">
+            <div class="vaga-led"></div>
+            <div class="vaga-icon">🚗</div>
+            <div class="vaga-label">Vaga 2</div>
+          </div>
+          <div class="vaga livre" id="vaga-3" onclick="toggleVaga(2)">
+            <div class="vaga-led"></div>
+            <div class="vaga-icon">P</div>
+            <div class="vaga-label">Vaga 3</div>
+          </div>
+        </div>
+        <div class="legenda">
+          <div class="legenda-item">
+            <div class="legenda-cor livre"></div>
+            <span class="legenda-texto">Livre</span>
+          </div>
+          <div class="legenda-item">
+            <div class="legenda-cor ocupada"></div>
+            <span class="legenda-texto">Ocupada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header" style="margin-bottom: 0;">
+        <div class="card-info">
+          <div class="card-icon purple">P</div>
+          <div>
+            <div class="card-title">Estacionamento<br>Universidade Lusófona</div>
+            <div class="card-subtitle">📍 Em Breve</div>
+          </div>
+        </div>
+        <div class="badge purple">BREVE</div>
+      </div>
+    </div>
+    
+    <p class="sim-hint">💡 Clica nas vagas para simular</p>
+  </div>
+
+  <!-- PAGINA PERFIL -->
+  <div id="page-profile" class="page">
+    <div class="profile-header">
+      <h1>Perfil</h1>
+      <div class="settings-btn">⚙️</div>
+    </div>
+
+    <div class="profile-card">
+      <div class="avatar">👤</div>
+      <div class="profile-name">Utilizador</div>
+      <div class="profile-email">admin@cityflow.com</div>
+      <div class="profile-stats">
+        <div>
+          <div class="profile-stat-value blue">12</div>
+          <div class="profile-stat-label">RESERVAS</div>
+        </div>
+        <div>
+          <div class="profile-stat-value green">48h</div>
+          <div class="profile-stat-label">TEMPO</div>
+        </div>
+        <div>
+          <div class="profile-stat-value purple">Gold</div>
+          <div class="profile-stat-label">NÍVEL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Definições</div>
+    <div class="menu-list">
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-icon blue">👤</div>
+          <span class="menu-label">Dados Pessoais</span>
+        </div>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-icon yellow">🔔</div>
+          <span class="menu-label">Notificações</span>
+        </div>
+        <span class="menu-arrow">›</span>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left">
+          <div class="menu-icon green">🌍</div>
+          <span class="menu-label">Idioma</span>
+        </div>
+        <span class="menu-arrow" style="color: #94a3b8;">Português ›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVEGACAO -->
+  <nav class="nav">
+    <div class="nav-item active" id="nav-home" onclick="showPage('home')">
+      <span>🏠</span>
+      <span>Início</span>
+    </div>
+    <div class="nav-item" id="nav-map" onclick="showPage('map')">
+      <span>🗺️</span>
+      <span>Mapa</span>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="showPage('profile')">
+      <span>👤</span>
+      <span>Perfil</span>
+    </div>
+  </nav>
+
+  <script>
+    let vagas = [true, true, false];
+
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      
+      if (page === 'home') {
+        document.getElementById('page-home').classList.add('active');
+        document.getElementById('nav-home').classList.add('active');
+      } else if (page === 'profile') {
+        document.getElementById('page-profile').classList.add('active');
+        document.getElementById('nav-profile').classList.add('active');
+      } else {
+        document.getElementById('page-home').classList.add('active');
+        document.getElementById('nav-map').classList.add('active');
+      }
+    }
+
+    function toggleVaga(index) {
+      vagas[index] = !vagas[index];
+      updateUI();
+    }
+
+    function updateUI() {
+      const ocupadas = vagas.filter(v => v).length;
+      const livres = 3 - ocupadas;
+      const pct = Math.round((ocupadas / 3) * 100);
+
+      document.getElementById('vagas-livres').textContent = livres;
+      document.getElementById('vagas-ocupadas').textContent = ocupadas;
+      document.getElementById('percentagem').textContent = pct + '%';
+
+      const fill = document.getElementById('progress-fill');
+      fill.style.width = pct + '%';
+      fill.className = 'progress-fill ' + (pct >= 100 ? 'high' : pct >= 50 ? 'medium' : 'low');
+
+      const badge = document.getElementById('badge-status');
+      const badgeText = document.getElementById('badge-text');
+      if (livres > 0) {
+        badge.className = 'badge green';
+        badgeText.textContent = 'ABERTO';
+      } else {
+        badge.className = 'badge red';
+        badgeText.textContent = 'CHEIO';
+      }
+
+      vagas.forEach((ocupada, i) => {
+        const v = document.getElementById('vaga-' + (i + 1));
+        const icon = v.querySelector('.vaga-icon');
+        if (ocupada) {
+          v.className = 'vaga ocupada';
+          icon.innerHTML = '🚗';
+        } else {
+          v.className = 'vaga livre';
+          icon.innerHTML = 'P';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
